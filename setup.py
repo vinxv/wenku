@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="wenku",
-    version="0.1",
+    version="0.2.1",
     packages=find_packages(),
 
     scripts=['./wenku.py'],
@@ -12,11 +12,15 @@ setup(
     author="vinxv",
     author_email="vinuxcat@gmail.com",
     description="baidu wenku downloader",
-    keywords="baiduwenku downloader",
-    url="https://github.com/vinxv/wenku",   # project home page, if any
+
+    download_url='https://github.com/vinxv/wenku/archive/v0.2.tar.gz',
+    url="https://github.com/vinxv/wenku",
+
     license='MIT',
     classifiers=[
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3.6'
-    ]
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+    ],
+    python_requires='>=3.6',
 )
