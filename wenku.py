@@ -144,7 +144,7 @@ class WenKuClient:
 
     @classmethod
     @ProgressInfo("正在获取文档文本...")
-    def get_text(cls, doc_id: dict) -> Iterable[str]:
+    def get_text(cls, doc_id: dict) -> str:
         """get text of doc_id"""
         url = f'https://wenku.baidu.com/view/{ doc_id }'
         html = cls.session.get(url).content.decode('gb2312')
@@ -152,7 +152,8 @@ class WenKuClient:
         pat = re.compile(r'WkInfo\.htmlUrls\s=\s\'(.*\})', re.IGNORECASE)
         res = pat.findall(html)
         if not res:
-            raise ValueError
+            return ''
+
         json_text = res[0]
         json_text = json_text.replace(r"\x22", '"').replace(r'\\', '')
         doc: dict = json.loads(json_text)
