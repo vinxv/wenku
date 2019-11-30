@@ -1,8 +1,9 @@
 from setuptools import setup, find_packages
 
+
 setup(
     name="wenku",
-    version="0.2.1",
+    version="0.22",
     packages=find_packages(),
 
     scripts=['./wenku.py'],
@@ -11,7 +12,10 @@ setup(
 
     author="vinxv",
     author_email="vinuxcat@gmail.com",
+
     description="baidu wenku downloader",
+    long_description=open("./README.md").read(),
+    long_description_content_type='text/markdown',
 
     download_url='https://github.com/vinxv/wenku/archive/v0.2.tar.gz',
     url="https://github.com/vinxv/wenku",
