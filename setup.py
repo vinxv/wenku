@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="wenku",
-    version="0.22",
+    version="0.23",
     packages=find_packages(),
 
     scripts=['./wenku.py'],
