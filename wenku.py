@@ -1,14 +1,36 @@
 #!/usr/bin/env python
-
 import argparse
 import json
 import os
 import re
+import time
 import warnings
 from concurrent import futures
-from typing import Any, Dict, Iterable, List, Optional, Union
+from contextlib import ContextDecorator
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import requests
+
+
+class ProgressInfo(ContextDecorator):
+
+    def __init__(self,
+                 start_info: str = "Starting",
+                 finish_info: str = "Finished"):
+
+        self.t0 = time.time()
+        self.start_info = start_info
+        self.finish_info = finish_info
+        super().__init__()
+
+    def __enter__(self):
+        print(self.start_info.ljust(20), end="\t")
+        return self
+
+    def __exit__(self, *exc):
+        elapse = (time.time() - self.t0) / 1000
+        print(f'{ self.finish_info }\t 耗时:{ elapse :0.5f}s')
+        return False
 
 
 class WenKuClient:
@@ -36,6 +58,7 @@ class WenKuClient:
             return result[0]
 
     @classmethod
+    @ProgressInfo("正在获取文档信息...")
     def get_doc_info(cls, doc_id: str) -> Dict[str, Any]:
         """get doc meta info describing the doc from api
 
@@ -120,6 +143,7 @@ class WenKuClient:
         return text
 
     @classmethod
+    @ProgressInfo("正在获取文档文本...")
     def get_text(cls, doc_id: dict) -> Iterable[str]:
         """get text of doc_id"""
         url = f'https://wenku.baidu.com/view/{ doc_id }'
@@ -139,6 +163,15 @@ class WenKuClient:
             text = cls.parse_doc_content(data)
             frags.append(text)
         return "".join(frags)
+
+    @classmethod
+    @ProgressInfo(start_info="正在获取文档图片...")
+    def get_images(cls, doc_info: dict) -> Tuple[str, bytes]:
+        image_urls = cls.parse_image_urls(doc_info)
+        results = cls.batch_fetch(image_urls)
+        for idx, data in enumerate(results, 1):
+            ext = 'jpg' if 'o=jpg' in image_urls[idx-1] else 'png'
+            yield f'page-{ idx }.{ ext }', data
 
     @classmethod
     def batch_fetch(cls, urls: List[str]) -> Iterable[bytes]:
@@ -175,15 +208,13 @@ class WenKuClient:
         title = doc_info['docInfo']['docTitle']
         cls.mkdir(title)
 
-        image_urls = cls.parse_image_urls(doc_info)
-        results = cls.batch_fetch(image_urls)
-        for idx, data in enumerate(results, 1):
-            ext = 'jpg' if 'o=jpg' in image_urls[idx-1] else 'png'
-            with open(f"{title}/page-{ idx }.{ ext }", 'wb') as f:
+        for filename, data in cls.get_images(doc_info):
+            with open(f"{title}/{filename}", 'wb') as f:
                 f.write(data)
 
         with open(f'{title}/{ title }.txt', 'w') as f:
             f.write(cls.get_text(doc_id))
+        print(f"文档下载到目录: { title }")
 
 
 if __name__ == "__main__":

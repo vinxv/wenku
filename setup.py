@@ -16,9 +16,7 @@ setup(
     url="https://github.com/vinxv/wenku",   # project home page, if any
     license='MIT',
     classifiers=[
-        'Development Status :: 1 - Alpha',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3.6+',
-        'Topic :: Tools',
+        'Programming Language :: Python :: 3.6'
     ]
 )
