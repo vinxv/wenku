@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="wenku",
-    version="0.23",
+    version="0.24",
     packages=find_packages(),
 
     scripts=['./wenku.py'],
@@ -17,7 +17,7 @@ setup(
     long_description=open("./README.md").read(),
     long_description_content_type='text/markdown',
 
-    download_url='https://github.com/vinxv/wenku/archive/v0.2.tar.gz',
+    download_url='https://github.com/vinxv/wenku/archive/v0.24.tar.gz',
     url="https://github.com/vinxv/wenku",
 
     license='MIT',

@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 import argparse
 import json
-import os
 import re
 import time
 import warnings
+from pathlib import Path
 from concurrent import futures
 from contextlib import ContextDecorator
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
@@ -60,12 +60,12 @@ class WenKuClient:
     @classmethod
     @ProgressInfo("正在获取文档信息...")
     def get_doc_info(cls, doc_id: str) -> Dict[str, Any]:
-        """get doc meta info describing the doc from api
-
+        """get doc meta info from api
+        it contains detail meta info of the document
         example url:
         https://wenku.baidu.com/api/doc/getdocinfo?doc_id=1a0992fe5e0e7cd184254b35eefdc8d377ee1453&callback=cb
 
-        the response json like:
+        the response json like below
         ```json
             {
                 "doc_id": "080f08af998fcc22bcd10d77",
@@ -97,12 +97,9 @@ class WenKuClient:
 
     @classmethod
     def parse_image_urls(cls, doc_info: dict) -> List[str]:
-        """parse image url from doc meta info
+        """parse image urls from doc meta info
 
-        `bcsParam` field describes image params for bcs(baidu cloud service)
-        `md5sum` field describes sign params to fetch image
-
-        the image url and params are described in `bcsParam` field
+        we need 'bcsParam' and 'md5sum' from doc_info to form image url
         """
 
         md5sum = doc_info['md5sum']
@@ -121,7 +118,7 @@ class WenKuClient:
 
             png_range, jpg_range = res[0]
 
-            # not image, when doc is in format of word or txt
+            # when doc is in format of word or txt, it has no images
             if jpg_range == '0-0' and png_range == '0-0':
                 continue
 
@@ -135,8 +132,6 @@ class WenKuClient:
     @classmethod
     def parse_doc_content(cls, raw: bytes) -> str:
         """parse text from doc info
-
-        wenku describe every small fragments of word document with json
         """
         items = cls.load_jsonp(raw)['body']
         text = "".join([item['c'] for item in items if item['t'] == 'word'])
@@ -176,7 +171,7 @@ class WenKuClient:
 
     @classmethod
     def batch_fetch(cls, urls: List[str]) -> Iterable[bytes]:
-        """fetch content from batch urls concurrency and in order by ThreadPoolExecutor"""
+        """fetch content from batch urls concurrently and in order by ThreadPoolExecutor"""
         def get_content(url: str) -> bytes:
             return requests.get(url).content
 
@@ -190,11 +185,11 @@ class WenKuClient:
                 yield task.result()
 
     @staticmethod
-    def mkdir(dirname: str):
-        try:
-            os.mkdir(dirname)
-        except Exception as e:  # noqa
-            pass
+    def mkdir(dirname: str) -> str:
+
+        p = Path(dirname)
+        p.mkdir(exist_ok=True)
+        return p.absolute()
 
     @classmethod
     def fetch(cls, url: str):
@@ -207,7 +202,7 @@ class WenKuClient:
         doc_info = cls.get_doc_info(doc_id)
 
         title = doc_info['docInfo']['docTitle']
-        cls.mkdir(title)
+        dirpath = cls.mkdir(title)
 
         for filename, data in cls.get_images(doc_info):
             with open(f"{title}/{filename}", 'wb') as f:
@@ -215,12 +210,12 @@ class WenKuClient:
 
         with open(f'{title}/{ title }.txt', 'w') as f:
             f.write(cls.get_text(doc_id))
-        print(f"文档下载到目录: { title }")
+        print(f"文档下载到目录: { dirpath }")
 
 
 if __name__ == "__main__":
 
-    description = '''Baidu Wenku Downloader. Usage: python wenku.py <url>'''
+    description = '''Baidu Wenku Downloader. Usage: wenku.py <url>'''
     cmd = argparse.ArgumentParser(description=description)
     cmd.add_argument("url", type=str)
     args = cmd.parse_args()
