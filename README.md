@@ -12,7 +12,7 @@ Usage:
 
 通过 github 安装
 
-`pip install https://github.com/vinxv/wenku`
+`pip install git+https://github.com/vinxv/wenku`
 
 下载
 
