@@ -17,7 +17,7 @@ setup(
     long_description=open("./README.md").read(),
     long_description_content_type='text/markdown',
 
-    download_url='https://github.com/vinxv/wenku/archive/v0.24.tar.gz',
+    download_url='https://github.com/vinxv/wenku/archive/v0.25.tar.gz',
     url="https://github.com/vinxv/wenku",
 
     license='MIT',
